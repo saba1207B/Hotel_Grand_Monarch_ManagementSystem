@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Grand Monarch — Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #c9a84c; --gold-light: #e8d08a;
+      --dark: #0e0c09; --dark-2: #181510; --dark-3: #231f18;
+      --cream: #f5f0e8; --cream-dim: #d4cfc6;
+      --green: #4caf7a; --green-dim: rgba(76,175,122,0.15);
+      --blue: #4c8fcf; --blue-dim: rgba(76,143,207,0.12);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; background: var(--dark); color: var(--cream); font-family: 'Jost', sans-serif; font-weight: 300; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: 0.5;
+    }
+    header { text-align: center; padding: 54px 24px 32px; border-bottom: 1px solid rgba(201,168,76,0.2); }
+    .hotel-eyebrow { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+    .hotel-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.4rem,6vw,4rem); font-weight: 300; letter-spacing: 0.08em; line-height: 1; }
+    .hotel-name em { font-style: italic; color: var(--gold-light); }
+    main { max-width: 1280px; margin: 0 auto; padding: 42px 24px 60px; }
+    .top-bar { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 32px; align-items: center; }
+    .button { border: none; background: var(--gold); color: var(--dark); padding: 12px 18px; font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: opacity 0.2s, transform 0.2s; font-family: 'Jost', sans-serif; }
+    .button:hover { opacity: 0.88; transform: translateY(-1px); }
+    .status-pill { font-size: 12px; color: var(--cream); padding: 10px 14px; border-radius: 2px; background: rgba(255,255,255,0.05); border: 1px solid rgba(201,168,76,0.15); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    @media (max-width: 1100px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 900px) { .grid, .grid-3 { grid-template-columns: 1fr; } }
+    .panel { background: var(--dark-2); border: 1px solid rgba(201,168,76,0.15); border-radius: 2px; padding: 28px; }
+    .panel-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 300; margin-bottom: 6px; }
+    .panel-sub { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 22px; }
+
+    /* Order cards */
+    .order-card { border: 1px solid rgba(201,168,76,0.12); border-radius: 2px; padding: 18px; margin-bottom: 14px; background: rgba(255,255,255,0.02); transition: border-color 0.2s; }
+    .order-card:hover { border-color: rgba(201,168,76,0.25); }
+    .order-card.status-doorstep { border-color: rgba(76,143,207,0.35); background: var(--blue-dim); }
+    .order-card.status-received { border-color: rgba(76,175,122,0.35); background: var(--green-dim); }
+    .order-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+    .order-card-head strong { color: var(--gold); font-size: 14px; }
+    .order-status-badge { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; border: 1px solid rgba(201,168,76,0.3); color: var(--gold-light); }
+    .order-status-badge.badge-doorstep { border-color: rgba(76,143,207,0.5); color: #7ab8f5; }
+    .order-status-badge.badge-received { border-color: rgba(76,175,122,0.5); color: var(--green); }
+    .order-card p { font-size: 13px; color: var(--cream-dim); line-height: 1.55; margin-bottom: 6px; }
+    .order-items-list { list-style: none; margin: 10px 0 0; padding: 0; }
+    .order-items-list li { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 8px 0; border-top: 1px solid rgba(201,168,76,0.08); font-size: 12px; color: var(--cream-dim); }
+    .order-total-row { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(201,168,76,0.15); margin-top: 10px; font-size: 13px; }
+    .order-total-row span:last-child { color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 1rem; }
+
+    /* Action buttons on order cards */
+    .order-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(201,168,76,0.1); }
+    .action-btn { flex: 1; min-width: 120px; border: none; padding: 9px 12px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; border-radius: 2px; font-family: 'Jost', sans-serif; font-weight: 500; transition: opacity 0.2s, transform 0.15s; }
+    .action-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-doorstep { background: linear-gradient(135deg, #4c8fcf 0%, #2a5fa0 100%); color: #fff; }
+    .btn-doorstep.done { background: rgba(76,143,207,0.15); border: 1px solid rgba(76,143,207,0.35); color: #7ab8f5; cursor: default; }
+
+    /* Delivery message form */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 8px; }
+    .form-select, .form-textarea, .form-input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.2); border-radius: 2px; color: var(--cream); font-family: 'Jost', sans-serif; font-size: 13px; font-weight: 300; padding: 10px 14px; outline: none; transition: border-color 0.2s; }
+    .form-select:focus, .form-textarea:focus, .form-input:focus { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+    .form-select option { background: var(--dark-2); }
+    .form-textarea { resize: vertical; min-height: 96px; }
+    .send-btn { width: 100%; background: linear-gradient(135deg, var(--gold) 0%, #8b6914 100%); border: none; color: var(--dark); font-family: 'Jost', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; padding: 14px; cursor: pointer; border-radius: 2px; transition: opacity 0.2s, transform 0.15s; margin-top: 4px; }
+    .send-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .sent-history { margin-top: 20px; }
+    .sent-history-title { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .sent-item { padding: 12px 14px; background: rgba(201,168,76,0.05); border-left: 2px solid rgba(201,168,76,0.4); margin-bottom: 8px; border-radius: 0 2px 2px 0; }
+    .sent-item.type-doorstep { border-left-color: rgba(76,143,207,0.7); background: rgba(76,143,207,0.06); }
+    .sent-item-meta { font-size: 10px; color: var(--cream-dim); margin-bottom: 4px; letter-spacing: 0.1em; }
+    .sent-item-msg { font-size: 13px; color: var(--cream); line-height: 1.5; }
+    .empty-state { color: var(--cream-dim); min-height: 140px; display: grid; place-items: center; text-align: center; font-size: 13px; }
+
+    /* Reviews Panel */
+    .review-card { border: 1px solid rgba(201,168,76,0.12); border-radius: 2px; padding: 18px; margin-bottom: 14px; background: rgba(255,255,255,0.02); animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .review-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .review-guest { font-size: 13px; color: var(--gold); font-weight: 400; }
+    .review-room { font-size: 11px; color: var(--cream-dim); margin-top: 2px; }
+    .review-time { font-size: 10px; color: var(--cream-dim); letter-spacing: 0.1em; }
+    .star-display { display: flex; gap: 3px; margin-bottom: 10px; }
+    .star-display .star { font-size: 16px; }
+    .star-display .star.filled { color: var(--gold); }
+    .star-display .star.empty { color: rgba(201,168,76,0.2); }
+    .review-text { font-size: 13px; color: var(--cream-dim); line-height: 1.65; font-style: italic; }
+    .review-text::before { content: '"'; color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; line-height: 0; vertical-align: -4px; margin-right: 2px; }
+    .review-text::after  { content: '"'; color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; line-height: 0; vertical-align: -4px; margin-left:  2px; }
+    .review-no-text { font-size: 12px; color: rgba(212,207,198,0.4); font-style: italic; }
+    .avg-score { display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15); border-radius: 2px; margin-bottom: 22px; }
+    .avg-number { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; color: var(--gold); line-height: 1; }
+    .avg-label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--cream-dim); margin-top: 4px; }
+    .avg-stars { display: flex; gap: 3px; }
+    .avg-stars .star { font-size: 18px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--gold); color: var(--dark); padding: 12px 24px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; border-radius: 2px; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; z-index: 9999; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.green { background: var(--green); }
+    .divider { height: 1px; background: rgba(201,168,76,0.1); margin: 22px 0; }
+    .tabs { display: flex; border-bottom: 1px solid rgba(201,168,76,0.15); margin-bottom: 22px; }
+    .tab { background: none; border: none; color: var(--cream-dim); font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="hotel-eyebrow">Staff Portal</p>
+  <h1 class="hotel-name">The Grand <em>Monarch</em></h1>
+</header>
+
+<main>
+  <div class="top-bar">
+    <button class="button" onclick="loadAll()">↻ Refresh</button>
+    <span class="status-pill" id="queue-status">Loading…</span>
+    <span class="status-pill" id="review-status" style="display:none;border-color:rgba(76,175,122,0.3);color:var(--green)"></span>
+  </div>
+
+  <div class="grid-3">
+
+    <!-- LEFT: Order Queue -->
+    <section class="panel" style="grid-column: span 2;">
+      <p class="panel-title">Order Queue</p>
+      <p class="panel-sub">All guest orders — manage delivery status</p>
+      <div id="order-queue"></div>
+    </section>
+
+    <!-- RIGHT: Messaging + Reviews tabs -->
+    <section class="panel">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('msg')">Send Update</button>
+        <button class="tab" onclick="switchTab('reviews')">Guest Reviews <span id="review-badge" style="display:none;background:var(--green);color:#0e0c09;font-size:9px;padding:1px 6px;border-radius:20px;margin-left:4px;"></span></button>
+      </div>
+
+      <!-- Messaging Tab -->
+      <div class="tab-content active" id="tab-msg">
+        <div class="form-group">
+          <label class="form-label">Select Order</label>
+          <select class="form-select" id="msg-order-select">
+            <option value="">— Choose an order —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message to Guest</label>
+          <textarea class="form-textarea" id="msg-body" placeholder="e.g. Your order is being prepared and will arrive in 20 minutes. — Grand Monarch Kitchen"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" onclick="sendUpdate()">Send Update to Guest</button>
+        <div class="divider"></div>
+        <div class="sent-history">
+          <p class="sent-history-title">Sent Updates</p>
+          <div id="sent-history-list"><div class="empty-state" style="min-height:60px;">No updates sent yet.</div></div>
+        </div>
+      </div>
+
+      <!-- Reviews Tab -->
+      <div class="tab-content" id="tab-reviews">
+        <div id="avg-score-block" style="display:none"></div>
+        <div id="reviews-list"><div class="empty-state">No guest reviews yet.</div></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let allOrders = [];
+
+  /* ── Toast ───────────────────────────────────────────────────────────── */
+  function showToast(msg, green = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.toggle('green', green);
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  /* ── Tabs ────────────────────────────────────────────────────────────── */
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  /* ── Load Everything ─────────────────────────────────────────────────── */
+  function loadAll() {
+    loadOrders();
+    renderReviews();
+  }
+
+  function getOrderStatus(order) {
+    // Check if received
+    const recKey = `orderreceived:${order.id}`;
+    let recData = null;
+    try { recData = JSON.parse(localStorage.getItem(recKey)); } catch(e) {}
+    if (recData) return 'received';
+
+    // Check if doorstep notification was sent
+    const msgKey = `staffmsg:${order.room}`;
+    let msgs = [];
+    try { msgs = JSON.parse(localStorage.getItem(msgKey) || '[]'); } catch(e) {}
+    const hasDoorstep = msgs.some(m => m.type === 'doorstep' && m.orderId === order.id);
+    if (hasDoorstep) return 'doorstep';
+
+    return order.status || 'new';
+  }
+
+  function loadOrders() {
+    allOrders = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('order:')) continue;
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key));
+        if (parsed) allOrders.push(parsed);
+      } catch(e) {}
+    }
+    allOrders.sort((a, b) => (b.placedAt || '').localeCompare(a.placedAt || ''));
+    renderQueue();
+    populateOrderSelect();
+    renderSentHistory();
+
+    const status = document.getElementById('queue-status');
+    status.textContent = allOrders.length
+      ? `${allOrders.length} order${allOrders.length > 1 ? 's' : ''} in queue`
+      : 'No orders in queue';
+  }
+
+  /* ── Order Queue Rendering ───────────────────────────────────────────── */
+  function renderQueue() {
+    const container = document.getElementById('order-queue');
+    if (!allOrders.length) {
+      container.innerHTML = '<div class="empty-state">No orders placed yet.<br>Waiting for room service requests…</div>';
+      return;
+    }
+    container.innerHTML = allOrders.map(order => {
+      const liveStatus = getOrderStatus(order);
+      const itemsHtml = (order.items || []).map(item =>
+        `<li><span>${item.qty} × ${item.name}</span><span>₹ ${(item.subtotal || 0).toLocaleString('en-IN')}</span></li>`
+      ).join('');
+      const timeAgo = order.placedAt ? new Date(order.placedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+      let badgeClass = '';
+      let badgeLabel = liveStatus;
+      if (liveStatus === 'doorstep') { badgeClass = 'badge-doorstep'; badgeLabel = '🚪 At Door'; }
+      if (liveStatus === 'received') { badgeClass = 'badge-received'; badgeLabel = '✓ Received'; }
+
+      const cardClass = liveStatus === 'doorstep' ? 'order-card status-doorstep'
+                      : liveStatus === 'received' ? 'order-card status-received'
+                      : 'order-card';
+
+      const doorstepDone = liveStatus === 'doorstep' || liveStatus === 'received';
+      const doorstepBtnClass = doorstepDone ? 'action-btn btn-doorstep done' : 'action-btn btn-doorstep';
+      const doorstepBtnLabel = liveStatus === 'received' ? '✓ Delivered' : liveStatus === 'doorstep' ? '🚪 Notified' : '🚪 At Doorstep';
+
+      return `
+        <article class="${cardClass}" id="card-${order.id}">
+          <div class="order-card-head">
+            <div>
+              <strong>${order.guest || 'Guest'}</strong> &nbsp;·&nbsp; Room ${order.room || '—'}
+              ${timeAgo ? `<span style="font-size:11px;color:var(--cream-dim);margin-left:8px;">${timeAgo}</span>` : ''}
+            </div>
+            <span class="order-status-badge ${badgeClass}">${badgeLabel}</span>
+          </div>
+          <p>${order.delivery || 'Delivery time not specified'}${order.notes ? `<br><em style="font-size:12px;">${order.notes}</em>` : ''}</p>
+          ${order.phone ? `<p style="font-size:12px;">📞 ${order.phone}</p>` : ''}
+          <ul class="order-items-list">${itemsHtml}</ul>
+          <div class="order-total-row"><span>Total</span><span>₹ ${(order.total || 0).toLocaleString('en-IN')}</span></div>
+          <div class="order-actions">
+            <button class="${doorstepBtnClass}" ${doorstepDone ? 'disabled' : ''} onclick="notifyDoorstep('${order.id}')">
+              ${doorstepBtnLabel}
+            </button>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  /* ── Doorstep Notification ───────────────────────────────────────────── */
+  function notifyDoorstep(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const room = order.room;
+    const msgKey = `staffmsg:${room}`;
+    let existing = [];
+    try { existing = JSON.parse(localStorage.getItem(msgKey) || '[]'); } catch(e) {}
+
+    const newMsg = {
+      id: 'MSG-' + Date.now().toString(36).toUpperCase(),
+      orderId,
+      room,
+      guest: order.guest,
+      type: 'doorstep',
+      message: `Your order has arrived at your door! Room ${room} — please open the door to receive your delivery. Enjoy your meal! 🚪`,
+      sentAt: new Date().toISOString()
+    };
+
+    existing.push(newMsg);
+    localStorage.setItem(msgKey, JSON.stringify(existing));
+
+    renderQueue();
+    populateOrderSelect();
+    renderSentHistory();
+    showToast(`🚪 Doorstep alert sent to Room ${room}`, false);
+  }
+
+  /* ── Select + Message Form ───────────────────────────────────────────── */
+  function populateOrderSelect() {
+    const sel = document.getElementById('msg-order-select');
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Choose an order —</option>';
+    allOrders.forEach(order => {
+      const opt = document.createElement('option');
+      opt.value = order.id;
+      opt.textContent = `Room ${order.room} — ${order.guest} (${order.id})`;
+      sel.appendChild(opt);
+    });
+    if (prev) sel.value = prev;
+  }
+
+  function sendUpdate() {
+    const orderId = document.getElementById('msg-order-select').value;
+    const body = document.getElementById('msg-body').value.trim();
+    if (!orderId) { showToast('Please select an order first.'); return; }
+    if (!body) { showToast('Please type a message.'); return; }
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) { showToast('Order not found.'); return; }
+
+    const room = order.room;
+    const msgKey = `staffmsg:${room}`;
+    let existing = [];
+    try { existing = JSON.parse(localStorage.getItem(msgKey) || '[]'); } catch(e) {}
+
+    const newMsg = {
+      id: 'MSG-' + Date.now().toString(36).toUpperCase(),
+      orderId, room, guest: order.guest,
+      message: body,
+      sentAt: new Date().toISOString()
+    };
+    existing.push(newMsg);
+    localStorage.setItem(msgKey, JSON.stringify(existing));
+    document.getElementById('msg-body').value = '';
+    renderSentHistory();
+    showToast(`Update sent to Room ${room}`);
+  }
+
+  function renderSentHistory() {
+    const container = document.getElementById('sent-history-list');
+    const allMsgs = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('staffmsg:')) continue;
+      try {
+        const msgs = JSON.parse(localStorage.getItem(key) || '[]');
+        allMsgs.push(...msgs);
+      } catch(e) {}
+    }
+    allMsgs.sort((a, b) => (b.sentAt || '').localeCompare(a.sentAt || ''));
+    if (!allMsgs.length) {
+      container.innerHTML = '<div class="empty-state" style="min-height:60px;">No updates sent yet.</div>';
+      return;
+    }
+    container.innerHTML = allMsgs.slice(0, 10).map(m => {
+      const time = m.sentAt ? new Date(m.sentAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+      const cls = m.type === 'doorstep' ? 'sent-item type-doorstep' : 'sent-item';
+      const icon = m.type === 'doorstep' ? '🚪 ' : '';
+      return `
+        <div class="${cls}">
+          <div class="sent-item-meta">Room ${m.room} · ${m.guest || ''} · ${time}</div>
+          <div class="sent-item-msg">${icon}${m.message}</div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ── Reviews ─────────────────────────────────────────────────────────── */
+  function renderReviews() {
+    const reviews = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('review:')) continue;
+      try {
+        const r = JSON.parse(localStorage.getItem(key));
+        if (r) reviews.push(r);
+      } catch(e) {}
+    }
+    reviews.sort((a, b) => (b.reviewedAt || '').localeCompare(a.reviewedAt || ''));
+
+    // Badge
+    const badge = document.getElementById('review-badge');
+    const reviewStatusEl = document.getElementById('review-status');
+    if (reviews.length) {
+      badge.textContent = reviews.length;
+      badge.style.display = 'inline';
+      reviewStatusEl.textContent = `${reviews.length} review${reviews.length > 1 ? 's' : ''} received`;
+      reviewStatusEl.style.display = '';
+    } else {
+      badge.style.display = 'none';
+      reviewStatusEl.style.display = 'none';
+    }
+
+    const listEl = document.getElementById('reviews-list');
+    const avgEl = document.getElementById('avg-score-block');
+
+    if (!reviews.length) {
+      avgEl.style.display = 'none';
+      listEl.innerHTML = '<div class="empty-state" style="min-height:100px;">No guest reviews yet.<br>Reviews appear after guests confirm delivery.</div>';
+      return;
+    }
+
+    // Average
+    const avg = reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length;
+    const avgRounded = Math.round(avg * 10) / 10;
+    const starsHtml = [1,2,3,4,5].map(n =>
+      `<span class="star ${n <= Math.round(avg) ? 'filled' : 'empty'}">★</span>`
+    ).join('');
+    avgEl.style.display = '';
+    avgEl.innerHTML = `
+      <div class="avg-score">
+        <div class="avg-number">${avgRounded}</div>
+        <div>
+          <div class="avg-stars">${starsHtml}</div>
+          <div class="avg-label">${reviews.length} review${reviews.length > 1 ? 's' : ''} · Average score</div>
+        </div>
+      </div>`;
+
+    listEl.innerHTML = reviews.map(r => {
+      const time = r.reviewedAt ? new Date(r.reviewedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
+      const date = r.reviewedAt ? new Date(r.reviewedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
+      const stars = [1,2,3,4,5].map(n =>
+        `<span class="star ${n <= r.rating ? 'filled' : 'empty'}">★</span>`
+      ).join('');
+      return `
+        <div class="review-card">
+          <div class="review-card-head">
+            <div>
+              <div class="review-guest">${r.guest || 'Guest'}</div>
+              <div class="review-room">Room ${r.room || '—'} · Order ${r.orderId || ''}</div>
+            </div>
+            <div class="review-time">${date}${time ? ` · ${time}` : ''}</div>
+          </div>
+          <div class="star-display">${stars}</div>
+          ${r.comment
+            ? `<p class="review-text">${r.comment}</p>`
+            : `<p class="review-no-text">No written review.</p>`}
+        </div>`;
+    }).join('');
+  }
+
+  /* ── Init & Auto-Refresh ─────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', loadAll);
+  setInterval(loadAll, 8000);
+</script>
+
+</body>
+</html>
