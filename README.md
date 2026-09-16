@@ -23,6 +23,12 @@
 
 ---
 
+## 🌐 Live Website
+
+**[Visit the Live GitHub Pages Website](https://saba1207B.github.io/Hotel_Grand_Monarch_ManagementSystem/)**
+
+---
+
 ## ✨ Key Features
 
 ### 🛎️ 1. Guest In-Room Dining Portal (`index.html`)
@@ -88,9 +94,9 @@ No package managers, build steps, or runtime dependencies required.
 
 1. In your GitHub repository:
    - Navigate to **Settings** > **Pages**.
-   - Under **Build and deployment** > **Source**, choose **Deploy from a branch**.
-   - Select branch **`main`** and folder **`/ (root)`**, then click **Save**.
-2. Within seconds, your site will be live at:
+   - Under **Build and deployment** > **Source**, choose **GitHub Actions**.
+   - The included GitHub Actions workflow automatically deploys the repository when changes are pushed to `main`.
+2. Your site will be available at:
    ```
    https://saba1207B.github.io/Hotel_Grand_Monarch_ManagementSystem/
    ```
